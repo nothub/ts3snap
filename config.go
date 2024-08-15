@@ -22,7 +22,7 @@ var sslInsecure bool
 
 var keepFiles bool
 
-//go:embed README.txt
+//go:embed USAGE.txt
 var usage string
 
 func flags() {
