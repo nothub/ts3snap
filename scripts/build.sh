@@ -26,6 +26,10 @@ build() (
             "${file}"
     fi
 
+    if test "$1" != "windows"; then
+        chmod +x "${file}"
+    fi
+
 )
 
 go clean
