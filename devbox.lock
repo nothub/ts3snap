@@ -97,6 +97,54 @@
         }
       }
     },
+    "goreleaser@2.1.0": {
+      "last_modified": "2024-07-31T08:48:38Z",
+      "resolved": "github:NixOS/nixpkgs/c3392ad349a5227f4a3464dce87bcc5046692fce#goreleaser",
+      "source": "devbox-search",
+      "version": "2.1.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/mccjwwnynzxdmkmp60nqz3a3paxha5my-goreleaser-2.1.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/mccjwwnynzxdmkmp60nqz3a3paxha5my-goreleaser-2.1.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/fzvlxa4h3p79xmnwdxr8lqiknky4q4in-goreleaser-2.1.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/fzvlxa4h3p79xmnwdxr8lqiknky4q4in-goreleaser-2.1.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/gnvy6x0p4k4rcbwd4bzf5iji5w07x9as-goreleaser-2.1.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/gnvy6x0p4k4rcbwd4bzf5iji5w07x9as-goreleaser-2.1.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/w4cr50fajdlxzlgg280wz2zxfaak7lci-goreleaser-2.1.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/w4cr50fajdlxzlgg280wz2zxfaak7lci-goreleaser-2.1.0"
+        }
+      }
+    },
     "openssl@3.0.14": {
       "last_modified": "2024-08-14T02:42:29Z",
       "resolved": "github:NixOS/nixpkgs/daf7bb95821b789db24fc1ac21f613db0c1bf2cb#openssl",
@@ -218,54 +266,6 @@
             }
           ],
           "store_path": "/nix/store/xpwwq5yjkbsip1p027jgdbzm9pvzfb1v-openssl-3.0.14-bin"
-        }
-      }
-    },
-    "upx@4.2.4": {
-      "last_modified": "2024-07-31T08:48:38Z",
-      "resolved": "github:NixOS/nixpkgs/c3392ad349a5227f4a3464dce87bcc5046692fce#upx",
-      "source": "devbox-search",
-      "version": "4.2.4",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/6i534yd1hc1pcl5ggnn2wq2n9kjzk8c4-upx-4.2.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/6i534yd1hc1pcl5ggnn2wq2n9kjzk8c4-upx-4.2.4"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/7yhw5sadicgbkwcb1s993k9lrqmjnfyb-upx-4.2.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/7yhw5sadicgbkwcb1s993k9lrqmjnfyb-upx-4.2.4"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/7dwa17j5y2qh36bhyxlx7swvd6qj8nvb-upx-4.2.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/7dwa17j5y2qh36bhyxlx7swvd6qj8nvb-upx-4.2.4"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/4qyv8s5vghys0jpgjgwbg408zn9xcp72-upx-4.2.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/4qyv8s5vghys0jpgjgwbg408zn9xcp72-upx-4.2.4"
         }
       }
     }

@@ -1,0 +1,79 @@
+# This is a goreleaser config file. Check the docs at https://goreleaser.com
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: ts3snap
+
+builds:
+  - binary: '{{ .ProjectName }}'
+    env:
+      - CGO_ENABLED=0
+    tags:
+      - osusergo
+      - netgo
+    ldflags:
+      - '-s'
+      - '-w'
+      - '-X github.com/nothub/ts3snap/internal/buildinfo.version={{ .Version }}'
+      - '-X github.com/nothub/ts3snap/internal/buildinfo.commit={{ .Commit }}'
+      - '-X github.com/nothub/ts3snap/internal/buildinfo.date={{ .Date }}'
+      - '-X github.com/nothub/ts3snap/internal/buildinfo.tool=goreleaser'
+    goos:
+      - linux
+      - darwin
+      - windows
+    ignore:
+      - goos: linux
+        goarch: 386
+      - goos: windows
+        goarch: 386
+      - goos: windows
+        goarch: arm64
+
+upx:
+  - enabled: true
+    goos: [ linux, windows ]
+    compress: best
+    lzma: true
+
+archives:
+  - meta: false
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE.txt
+
+nfpms:
+  - file_name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    maintainer: Florian Hübner <fhuebner@posteo.de>
+    description: |-
+      Create and restore TeamSpeak 3 server snapshots.
+    homepage: https://github.com/nothub/ts3snap
+    license: MIT
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
+    bindir: /usr/local/bin
+    meta: false
+
+changelog:
+  sort: asc
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+release:
+  github:
+    owner: nothub
+    name: ts3snap
+  name_template: 'v{{ .Version }}'
+  header: 'Release generated at commit: {{ .ShortCommit }}'
+  draft: false
+  make_latest: true

@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
+	"github.com/nothub/ts3snap/internal/buildinfo"
 	"log"
 	"math"
 	"os"
@@ -49,12 +50,19 @@ func flags() {
 	// this is annoying
 	h1 := flag.Bool("h", false, "")
 	h2 := flag.Bool("help", false, "")
+	ver := flag.Bool("version", false, "")
 
 	flag.Parse()
 
 	// help requested
 	if *h1 || *h2 || flag.Arg(0) == "help" {
 		fmt.Print(usage)
+		os.Exit(0)
+	}
+
+	// version requested
+	if *ver || flag.Arg(0) == "version" {
+		fmt.Println(buildinfo.String())
 		os.Exit(0)
 	}
 

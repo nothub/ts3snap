@@ -16,6 +16,9 @@ Commands:
     help
         Print this help message and exit.
 
+    version
+        Print version message and exit.
+
 Global options:
 
     --host=<address>
@@ -56,6 +59,12 @@ Global options:
 
     --ssl-insecure
         Skip cert verification for https connections.
+
+    --help
+        Print this help message and exit.
+
+    --version
+        Print version message and exit.
 
 Authentication:
 
