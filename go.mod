@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/jkoenig134/go-ts3 v1.0.7-0.20240815130458-94bfbb26fac7
 	github.com/multiplay/go-ts3 v1.2.0
-	golang.org/x/crypto v0.30.0
+	golang.org/x/crypto v0.31.0
 )
 
 require (
