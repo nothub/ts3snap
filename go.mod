@@ -1,11 +1,12 @@
 module github.com/nothub/ts3snap
 
 go 1.22
+toolchain go1.23.6
 
 require (
 	github.com/jkoenig134/go-ts3 v1.0.7-0.20240815130458-94bfbb26fac7
 	github.com/multiplay/go-ts3 v1.2.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 )
 
 require (
