@@ -1,11 +1,12 @@
 module github.com/nothub/ts3snap
 
 go 1.22
+toolchain go1.23.7
 
 require (
 	github.com/jkoenig134/go-ts3 v1.0.7-0.20240815130458-94bfbb26fac7
 	github.com/multiplay/go-ts3 v1.2.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.36.0
 )
 
 require (
@@ -16,5 +17,5 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.34.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 )
