@@ -4,13 +4,14 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
-	tsweb "github.com/jkoenig134/go-ts3"
-	tsraw "github.com/multiplay/go-ts3"
-	"golang.org/x/crypto/ssh"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
+
+	tsweb "github.com/jkoenig134/go-ts3"
+	tsraw "github.com/multiplay/go-ts3"
+	"golang.org/x/crypto/ssh"
 )
 
 func main() {

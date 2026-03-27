@@ -1,8 +1,9 @@
 package main
 
 import (
-	tsweb "github.com/jkoenig134/go-ts3"
 	"log"
+
+	tsweb "github.com/jkoenig134/go-ts3"
 )
 
 func createWeb(client *tsweb.TeamspeakHttpClient) Snapshot {

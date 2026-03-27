@@ -1,10 +1,11 @@
 package main
 
 import (
-	tsraw "github.com/multiplay/go-ts3"
 	"log"
 	"strconv"
 	"strings"
+
+	tsraw "github.com/multiplay/go-ts3"
 )
 
 func createRaw(client *tsraw.Client) Snapshot {

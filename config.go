@@ -4,10 +4,11 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
-	"github.com/nothub/ts3snap/internal/buildinfo"
 	"log"
 	"math"
 	"os"
+
+	"github.com/nothub/ts3snap/internal/buildinfo"
 )
 
 var host string
