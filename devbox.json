@@ -3,7 +3,7 @@
   "packages": [
     "go@1.26",
     "goreleaser@2.14",
-    "docker@29.3",
+    "docker@29.9.3",
     "openssl@3.6"
   ],
   "shell": {

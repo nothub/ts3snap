@@ -1,51 +1,41 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "docker@29.3": {
-      "last_modified": "2026-03-21T07:29:51Z",
-      "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#docker",
+    "docker@29.9.3": {
+      "last_modified": "2026-11-22T18:15:35Z",
+      "resolved": "github:NixOS/nixpkgs/619c39f6eac5d1ed6b8f073a9414baf7034b2356#docker",
       "source": "devbox-search",
-      "version": "29.3.0",
+      "version": "29.9.3",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/fbr0asx18w3r8y3yj8n16iyis0cnfnmh-docker-29.3.0",
+              "path": "/nix/store/0x1w8p4vj67jxc960p0w93crayqsnzg4-docker-29.9.3",
               "default": true
             }
           ],
-          "store_path": "/nix/store/fbr0asx18w3r8y3yj8n16iyis0cnfnmh-docker-29.3.0"
+          "store_path": "/nix/store/0x1w8p4vj67jxc960p0w93crayqsnzg4-docker-29.9.3"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/pjpza6bzcyfz8iwpvvhnjdfdx9vrbia7-docker-29.3.0",
+              "path": "/nix/store/jlgylba7kczv5c8xzb36w85mywr1hvrl-docker-29.9.3",
               "default": true
             }
           ],
-          "store_path": "/nix/store/pjpza6bzcyfz8iwpvvhnjdfdx9vrbia7-docker-29.3.0"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/ybclk8b5iahd6vlzgxxap7a5wqqpm4lp-docker-29.3.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/ybclk8b5iahd6vlzgxxap7a5wqqpm4lp-docker-29.3.0"
+          "store_path": "/nix/store/jlgylba7kczv5c8xzb36w85mywr1hvrl-docker-29.9.3"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/8y2vzxsmyb0cgyjb98jrs7s9mkii6rvq-docker-29.3.0",
+              "path": "/nix/store/m76gmgmmx16dipvgfgsn3bxhrs3f4bgi-docker-29.9.3",
               "default": true
             }
           ],
-          "store_path": "/nix/store/8y2vzxsmyb0cgyjb98jrs7s9mkii6rvq-docker-29.3.0"
+          "store_path": "/nix/store/m76gmgmmx16dipvgfgsn3bxhrs3f4bgi-docker-29.9.3"
         }
       }
     },
