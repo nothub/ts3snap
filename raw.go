@@ -2,22 +2,19 @@ package main
 
 import (
 	"log"
-	"strconv"
-	"strings"
 
 	tsraw "github.com/multiplay/go-ts3"
 )
 
 func createRaw(client *tsraw.Client) Snapshot {
 
-	cmd := strings.Builder{}
-	cmd.WriteString("serversnapshotcreate")
+	var args []tsraw.CmdArg
 	if secret != "" {
-		cmd.WriteString(" password=" + secret)
+		args = append(args, tsraw.NewArg("password", secret))
 	}
 
 	var snap Snapshot
-	_, err := client.ExecCmd(tsraw.NewCmd(cmd.String()).WithResponse(&snap))
+	_, err := client.ExecCmd(tsraw.NewCmd("serversnapshotcreate").WithArgs(args...).WithResponse(&snap))
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -27,22 +24,22 @@ func createRaw(client *tsraw.Client) Snapshot {
 
 func deployRaw(client *tsraw.Client, snap Snapshot) {
 
-	cmd := strings.Builder{}
-	cmd.WriteString("serversnapshotdeploy")
-	cmd.WriteString(" -mapping")
+	opts := []string{"-mapping"}
 	if keepFiles {
-		cmd.WriteString(" -keepfiles")
+		opts = append(opts, "-keepfiles")
 	}
-	if secret != "" {
-		cmd.WriteString(" password=" + secret)
-	}
-	cmd.WriteString(" version=" + strconv.Itoa(snap.Version))
-	if snap.Salt != "" {
-		cmd.WriteString(" salt=" + snap.Salt)
-	}
-	cmd.WriteString(" data=" + snap.Data)
 
-	_, err := client.ExecCmd(tsraw.NewCmd(cmd.String()))
+	var args []tsraw.CmdArg
+	if secret != "" {
+		args = append(args, tsraw.NewArg("password", secret))
+	}
+	args = append(args, tsraw.NewArg("version", snap.Version))
+	if snap.Salt != "" {
+		args = append(args, tsraw.NewArg("salt", snap.Salt))
+	}
+	args = append(args, tsraw.NewArg("data", snap.Data))
+
+	_, err := client.ExecCmd(tsraw.NewCmd("serversnapshotdeploy").WithArgs(args...).WithOptions(opts...))
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
