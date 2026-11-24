@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/jkoenig134/go-ts3 v1.0.7-0.20240917152714-04c4c076d317
-	github.com/multiplay/go-ts3 v1.2.0
+	github.com/multiplay/go-ts3 v1.3.0
 	golang.org/x/crypto v0.59.0
 )
 

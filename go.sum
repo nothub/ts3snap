@@ -19,6 +19,8 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/multiplay/go-ts3 v1.2.0 h1:LaN6iz9TZjHXxhLwfU0gjUgDxX0Hq7BCbuyuRhYMl3U=
 github.com/multiplay/go-ts3 v1.2.0/go.mod h1:OdNmiO3uV++4SldaJDQTIGg8gNAu5MOiccZiAqVqUZA=
+github.com/multiplay/go-ts3 v1.3.0 h1:wj8WJoqR9hG3dNByWWCr0S92eGjkTRjU0r8D//Y68Do=
+github.com/multiplay/go-ts3 v1.3.0/go.mod h1:SYQl3cF+s9kLfDUzIc6LTad/3fK6MPzdrQyo350eBmI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
