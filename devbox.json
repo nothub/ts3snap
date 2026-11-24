@@ -4,7 +4,7 @@
     "go@1.26",
     "goreleaser@2.14",
     "docker@29.3",
-    "openssl@3.6"
+    "openssl@3.6.4"
   ],
   "shell": {
     "scripts": {
