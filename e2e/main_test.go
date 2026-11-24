@@ -4,7 +4,6 @@ package e2e
 
 import (
 	"bytes"
-	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -17,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -33,6 +33,8 @@ const (
 	keyPath   = "/etc/ssl/query/key.pem"
 )
 
+var protocols = []string{"raw", "ssh", "http", "https"}
+
 var queryPorts = map[string]string{
 	"raw":   "10011/tcp",
 	"ssh":   "10022/tcp",
@@ -42,10 +44,8 @@ var queryPorts = map[string]string{
 
 // Set once by TestMain, read-only afterwards.
 var (
-	bin    string
-	host   string
-	ports  = map[string]string{}
-	apiKey string
+	bin      string
+	crt, key []byte
 )
 
 func TestMain(m *testing.M) {
@@ -53,8 +53,6 @@ func TestMain(m *testing.M) {
 }
 
 func run(m *testing.M) int {
-	ctx := context.Background()
-
 	dir, err := os.MkdirTemp("", "ts3snap-e2e-")
 	if err != nil {
 		log.Print(err)
@@ -69,11 +67,35 @@ func run(m *testing.M) int {
 		return 1
 	}
 
-	crt, key, err := selfSigned()
+	crt, key, err = selfSigned()
 	if err != nil {
 		log.Print(err)
 		return 1
 	}
+
+	return m.Run()
+}
+
+// server is one TeamSpeak container, owned by a single test.
+type server struct {
+	host   string
+	ports  map[string]string
+	apiKey string
+}
+
+// eachProto runs fn once per query protocol, each in parallel against its own server.
+func eachProto(t *testing.T, fn func(t *testing.T, s *server, proto string)) {
+	t.Parallel()
+	for _, proto := range protocols {
+		t.Run(proto, func(t *testing.T) {
+			t.Parallel()
+			fn(t, newServer(t), proto)
+		})
+	}
+}
+
+func newServer(t *testing.T) *server {
+	t.Helper()
 
 	var waits []wait.Strategy
 	var exposed []string
@@ -82,7 +104,7 @@ func run(m *testing.M) int {
 		waits = append(waits, wait.ForListeningPort(p))
 	}
 
-	ctr, err := testcontainers.Run(ctx, image,
+	ctr, err := testcontainers.Run(t.Context(), image,
 		testcontainers.WithEnv(map[string]string{"TS3SERVER_LICENSE": "accept"}),
 		testcontainers.WithCmd(
 			"serveradmin_password="+adminPass,
@@ -97,44 +119,36 @@ func run(m *testing.M) int {
 		testcontainers.WithExposedPorts(exposed...),
 		testcontainers.WithWaitStrategyAndDeadline(2*time.Minute, waits...),
 	)
-	defer func() {
-		if err := testcontainers.TerminateContainer(ctr); err != nil {
-			log.Print(err)
-		}
-	}()
+	testcontainers.CleanupContainer(t, ctr)
 	if err != nil {
-		log.Printf("start %s: %v", image, err)
-		return 1
+		t.Fatalf("start %s: %v", image, err)
 	}
 
-	host, err = ctr.Host(ctx)
+	s := &server{ports: map[string]string{}}
+	s.host, err = ctr.Host(t.Context())
 	if err != nil {
-		log.Print(err)
-		return 1
+		t.Fatal(err)
 	}
 	for proto, p := range queryPorts {
-		mapped, err := ctr.MappedPort(ctx, p)
+		mapped, err := ctr.MappedPort(t.Context(), p)
 		if err != nil {
-			log.Print(err)
-			return 1
+			t.Fatal(err)
 		}
-		ports[proto] = mapped.Port()
+		s.ports[proto] = mapped.Port()
 	}
 
-	apiKey, err = createAPIKey()
+	s.apiKey, err = s.createAPIKey()
 	if err != nil {
-		log.Printf("create api key: %v", err)
-		return 1
+		t.Fatalf("create api key: %v", err)
 	}
-
-	return m.Run()
+	return s
 }
 
-func createAPIKey() (string, error) {
+func (s *server) createAPIKey() (string, error) {
 	var resp struct {
 		Key string `ms:"apikey"`
 	}
-	err := withQuery(func(c *tsraw.Client) error {
+	err := s.query(func(c *tsraw.Client) error {
 		_, err := c.ExecCmd(tsraw.NewCmd("apikeyadd").
 			WithArgs(tsraw.NewArg("scope", "manage"), tsraw.NewArg("lifetime", 1)).
 			WithResponse(&resp))
@@ -146,10 +160,10 @@ func createAPIKey() (string, error) {
 	return resp.Key, err
 }
 
-// withQuery runs fn on a fresh raw query session bound to virtual server 1.
+// query runs fn on a fresh raw query session bound to virtual server 1.
 // A fresh session per call keeps a deploy from invalidating a long-lived one.
-func withQuery(fn func(c *tsraw.Client) error) error {
-	c, err := tsraw.NewClient(host + ":" + ports["raw"])
+func (s *server) query(fn func(c *tsraw.Client) error) error {
+	c, err := tsraw.NewClient(s.host + ":" + s.ports["raw"])
 	if err != nil {
 		return err
 	}
@@ -163,20 +177,41 @@ func withQuery(fn func(c *tsraw.Client) error) error {
 	return fn(c)
 }
 
-// ts3snap runs the built binary against the container over proto.
-func ts3snap(proto string, args ...string) error {
-	flags := []string{"--host=" + host, "--port=" + ports[proto], "--proto=" + proto}
+// mustQuery runs a single query command and fails the test on error.
+func (s *server) mustQuery(t *testing.T, cmd *tsraw.Cmd) {
+	t.Helper()
+	err := s.query(func(c *tsraw.Client) error {
+		_, err := c.ExecCmd(cmd)
+		return err
+	})
+	if err != nil {
+		// The full command can carry a multi-kilobyte snapshot blob.
+		name, _, _ := strings.Cut(cmd.String(), " ")
+		t.Fatalf("%s: %v", name, err)
+	}
+}
+
+// ts3snap runs the built binary against s over proto.
+func (s *server) ts3snap(proto string, args ...string) error {
+	flags := []string{"--host=" + s.host, "--port=" + s.ports[proto], "--proto=" + proto}
 	switch proto {
 	case "raw", "ssh":
 		flags = append(flags, "--user="+adminUser, "--pass="+adminPass)
 	case "http", "https":
-		flags = append(flags, "--key="+apiKey, "--ssl-insecure")
+		flags = append(flags, "--key="+s.apiKey, "--ssl-insecure")
 	}
 	out, err := exec.Command(bin, append(flags, args...)...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("ts3snap %v: %w\n%s", args, err, out)
 	}
 	return nil
+}
+
+func (s *server) mustRun(t *testing.T, proto string, args ...string) {
+	t.Helper()
+	if err := s.ts3snap(proto, args...); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func selfSigned() (crt, key []byte, err error) {

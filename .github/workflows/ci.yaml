@@ -21,7 +21,7 @@ jobs:
         run: ./scripts/test.sh
 
       - name: 'Run e2e tests'
-        run: go test -tags e2e -count=1 ./e2e/...
+        run: go test -tags e2e -count=1 -parallel 4 ./e2e/...
 
       - name: 'Publish release'
         if: startsWith(github.ref, 'refs/tags/v') == true
