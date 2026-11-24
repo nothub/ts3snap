@@ -18,3 +18,5 @@ require (
 	github.com/valyala/fasthttp v1.34.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
 )
+
+replace github.com/jkoenig134/go-ts3 => github.com/nothub/go-ts3 v0.0.0-20261124222528-38e598c738f0
