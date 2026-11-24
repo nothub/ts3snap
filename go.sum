@@ -7,6 +7,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/jkoenig134/go-ts3 v1.0.7-0.20240815130458-94bfbb26fac7 h1:yj3TotglaEkbylKFyl79EQEg6DfnWLzMfOR+NKXCcjY=
 github.com/jkoenig134/go-ts3 v1.0.7-0.20240815130458-94bfbb26fac7/go.mod h1:SVy3HZ6mAYL+DPYTC/2H3Npg3ycN5Nj29/wtP65gt/E=
+github.com/jkoenig134/go-ts3 v1.0.7-0.20240917152714-04c4c076d317 h1:g5ccVWoL6Bv1iO+SaRrSDzyiM467osaWm4gqDgSVHao=
+github.com/jkoenig134/go-ts3 v1.0.7-0.20240917152714-04c4c076d317/go.mod h1:MYWPVoz0K9jT2naGKOO018siATdpLbxrMspaSR6pV+c=
 github.com/jkoenig134/schema v1.1.1 h1:Pn/v5i3bHVyQMDFNvjLs88W5MVcdHjdB2WAW5g5GsHE=
 github.com/jkoenig134/schema v1.1.1/go.mod h1:acCT4QqQtnPkykXU1wmyRCgW9D7joFxXVSyInwtDhJ4=
 github.com/klauspost/compress v1.15.0 h1:xqfchp4whNFxn5A4XFyyYtitiWI8Hy5EW59jEwcyL6U=
