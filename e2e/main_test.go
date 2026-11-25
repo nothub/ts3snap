@@ -166,7 +166,16 @@ func (s *server) createAPIKey() (string, error) {
 // query runs fn on a fresh raw query session bound to virtual server 1.
 // A fresh session per call keeps a deploy from invalidating a long-lived one.
 func (s *server) query(fn func(c *tsraw.Client) error) error {
-	c, err := tsraw.NewClient(s.host + ":" + s.ports["raw"])
+	// Right after a deploy the server sometimes closes a new connection before its
+	// banner (client: header: unexpected EOF), so the connect alone is retried.
+	var c *tsraw.Client
+	var err error
+	for deadline := time.Now().Add(5 * time.Second); ; time.Sleep(250 * time.Millisecond) {
+		c, err = tsraw.NewClient(s.host + ":" + s.ports["raw"])
+		if err == nil || time.Now().After(deadline) {
+			break
+		}
+	}
 	if err != nil {
 		return err
 	}
