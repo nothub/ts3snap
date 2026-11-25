@@ -61,7 +61,10 @@ func run(m *testing.M) int {
 	defer os.RemoveAll(dir)
 
 	bin = filepath.Join(dir, "ts3snap")
-	out, err := exec.Command("go", "build", "-o", bin, "..").CombinedOutput()
+	// e2e is its own module, so the binary is built from inside the root module.
+	cmd := exec.Command("go", "build", "-o", bin, ".")
+	cmd.Dir = ".."
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("build ts3snap: %v\n%s", err, out)
 		return 1
