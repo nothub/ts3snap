@@ -4,6 +4,7 @@ package e2e
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -11,6 +12,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math/big"
 	"os"
@@ -123,6 +125,20 @@ func newServer(t *testing.T) *server {
 		testcontainers.WithWaitStrategyAndDeadline(2*time.Minute, waits...),
 	)
 	testcontainers.CleanupContainer(t, ctr)
+	// Registered after CleanupContainer, so it runs before the container is gone.
+	t.Cleanup(func() {
+		if !t.Failed() || ctr == nil {
+			return
+		}
+		r, err := ctr.Logs(context.Background())
+		if err != nil {
+			t.Logf("container logs: %v", err)
+			return
+		}
+		defer r.Close()
+		b, _ := io.ReadAll(r)
+		t.Logf("container logs:\n%s", b)
+	})
 	if err != nil {
 		t.Fatalf("start %s: %v", image, err)
 	}
@@ -187,6 +203,21 @@ func (s *server) query(fn func(c *tsraw.Client) error) error {
 		return err
 	}
 	return fn(c)
+}
+
+// read is query for a read-only fn. A deploy restarts the virtual server,
+// which kicks sessions mid-command, so the whole session is retried.
+// Writes go through query alone, since a retry could apply them twice.
+// fn must reset whatever it decodes into, as it may run more than once.
+func (s *server) read(fn func(c *tsraw.Client) error) error {
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		err := s.query(fn)
+		if err == nil || time.Now().After(deadline) {
+			return err
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
 }
 
 // mustQuery runs a single query command and fails the test on error.

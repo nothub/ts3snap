@@ -245,7 +245,8 @@ type channel struct {
 func (s *server) channels(t *testing.T) []channel {
 	t.Helper()
 	var chans []channel
-	err := s.query(func(c *tsraw.Client) error {
+	err := s.read(func(c *tsraw.Client) error {
+		chans = nil
 		_, err := c.ExecCmd(tsraw.NewCmd("channellist").WithOptions("-topic").WithResponse(&chans))
 		return err
 	})
@@ -325,19 +326,20 @@ func (s *server) files(t *testing.T, cid int) []string {
 	var entries []struct {
 		Name string `ms:"name"`
 	}
-	err := s.query(func(c *tsraw.Client) error {
+	err := s.read(func(c *tsraw.Client) error {
+		entries = nil
 		_, err := c.ExecCmd(tsraw.NewCmd("ftgetfilelist").WithArgs(
 			tsraw.NewArg("cid", cid),
 			tsraw.NewArg("cpw", ""),
 			tsraw.NewArg("path", "/"),
 		).WithResponse(&entries))
+		// An empty channel answers with error 1281 (database empty result set).
+		var qerr *tsraw.Error
+		if errors.As(err, &qerr) && qerr.ID == 1281 {
+			return nil
+		}
 		return err
 	})
-	// An empty channel answers with error 1281 (database empty result set).
-	var qerr *tsraw.Error
-	if errors.As(err, &qerr) && qerr.ID == 1281 {
-		return nil
-	}
 	if err != nil {
 		t.Fatalf("ftgetfilelist: %v", err)
 	}
@@ -362,7 +364,8 @@ func (s *server) state(t *testing.T) []string {
 		Name string `ms:"name"`
 		Type int    `ms:"type"`
 	}
-	err := s.query(func(c *tsraw.Client) error {
+	err := s.read(func(c *tsraw.Client) error {
+		groups = nil
 		if _, err := c.ExecCmd(tsraw.NewCmd("serverinfo").WithResponse(&info)); err != nil {
 			return err
 		}
@@ -385,7 +388,8 @@ func (s *server) state(t *testing.T) []string {
 			ID    string `ms:"permsid"`
 			Value int    `ms:"permvalue"`
 		}
-		err := s.query(func(c *tsraw.Client) error {
+		err := s.read(func(c *tsraw.Client) error {
+			perms = nil
 			_, err := c.ExecCmd(tsraw.NewCmd("servergrouppermlist").
 				WithArgs(tsraw.NewArg("sgid", g.ID)).WithOptions("-permsid").WithResponse(&perms))
 			return err
