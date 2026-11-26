@@ -3,7 +3,7 @@ module github.com/nothub/ts3snap
 go 1.26.1
 
 require (
-	github.com/jkoenig134/go-ts3 v1.0.7-0.20240917152714-04c4c076d317
+	github.com/jkoenig134/go-ts3 v1.0.7-0.20261124230413-08d00d5f34e6
 	github.com/multiplay/go-ts3 v1.3.0
 	golang.org/x/crypto v0.59.0
 )
@@ -18,5 +18,3 @@ require (
 	github.com/valyala/fasthttp v1.34.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
 )
-
-replace github.com/jkoenig134/go-ts3 => github.com/nothub/go-ts3 v0.0.0-20261124222528-38e598c738f0

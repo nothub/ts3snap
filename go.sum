@@ -2,6 +2,8 @@ github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef h1:2JGTg6JapxP9/R33ZaagQtAM4EkkSYnIAlOG5EI8gkM=
 github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef/go.mod h1:JS7hed4L1fj0hXcyEejnW57/7LCetXggd+vwrRnYeII=
+github.com/jkoenig134/go-ts3 v1.0.7-0.20261124230413-08d00d5f34e6 h1:BKUBd7+/q/AgEyaV/2m2sFSXYMmTLOsdGCWOC8M890U=
+github.com/jkoenig134/go-ts3 v1.0.7-0.20261124230413-08d00d5f34e6/go.mod h1:MYWPVoz0K9jT2naGKOO018siATdpLbxrMspaSR6pV+c=
 github.com/jkoenig134/schema v1.1.1 h1:Pn/v5i3bHVyQMDFNvjLs88W5MVcdHjdB2WAW5g5GsHE=
 github.com/jkoenig134/schema v1.1.1/go.mod h1:acCT4QqQtnPkykXU1wmyRCgW9D7joFxXVSyInwtDhJ4=
 github.com/klauspost/compress v1.15.0/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
@@ -11,8 +13,6 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/multiplay/go-ts3 v1.3.0 h1:wj8WJoqR9hG3dNByWWCr0S92eGjkTRjU0r8D//Y68Do=
 github.com/multiplay/go-ts3 v1.3.0/go.mod h1:SYQl3cF+s9kLfDUzIc6LTad/3fK6MPzdrQyo350eBmI=
-github.com/nothub/go-ts3 v0.0.0-20261124222528-38e598c738f0 h1:MxWmzJrqcC+tMLarV/9wzfLKk+olOS6PrWjKa/DKbQ4=
-github.com/nothub/go-ts3 v0.0.0-20261124222528-38e598c738f0/go.mod h1:MYWPVoz0K9jT2naGKOO018siATdpLbxrMspaSR6pV+c=
 github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
 github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
