@@ -52,7 +52,7 @@ func TestWrongSecret(t *testing.T) {
 		s.mustRun(t, proto, "--secret=e2e-secret", "create", file)
 		s.deleteChannel(t, "e2e")
 
-		if err := s.ts3snap(proto, "--secret=wrong", "deploy", file); err == nil {
+		if _, err := s.ts3snap(proto, "--secret=wrong", "deploy", file); err == nil {
 			t.Fatal("deploy with wrong secret succeeded")
 		}
 		if s.hasChannel(t, "e2e") {

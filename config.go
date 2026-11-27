@@ -21,6 +21,7 @@ var secret string
 var srvId uint
 var urlPath string
 var sslInsecure bool
+var ftPort uint
 
 var keepFiles bool
 
@@ -44,6 +45,7 @@ func flags() {
 	flag.UintVar(&srvId, "srvid", 1, "")
 	flag.StringVar(&urlPath, "url-path", "", "")
 	flag.BoolVar(&sslInsecure, "ssl-insecure", false, "")
+	flag.UintVar(&ftPort, "ft-port", 30033, "")
 
 	// command options (deploy)
 	flag.BoolVar(&keepFiles, "keepfiles", false, "")
@@ -92,6 +94,10 @@ func flags() {
 
 	if port < 1 || port > math.MaxUint16 {
 		log.Fatalf("Invalid server query port: %v", port)
+	}
+
+	if ftPort < 1 || ftPort > math.MaxUint16 {
+		log.Fatalf("Invalid file transfer port: %v", ftPort)
 	}
 
 	if srvId < 1 {

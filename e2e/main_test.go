@@ -33,6 +33,7 @@ const (
 	adminPass = "e2e-pass"
 	crtPath   = "/etc/ssl/query/crt.pem"
 	keyPath   = "/etc/ssl/query/key.pem"
+	ftPort    = "30033/tcp"
 )
 
 var protocols = []string{"raw", "ssh", "http", "https"}
@@ -85,13 +86,19 @@ func run(m *testing.M) int {
 type server struct {
 	host   string
 	ports  map[string]string
+	ftPort string
 	apiKey string
 }
 
 // eachProto runs fn once per query protocol, each in parallel against its own server.
 func eachProto(t *testing.T, fn func(t *testing.T, s *server, proto string)) {
+	eachProtoIn(t, protocols, fn)
+}
+
+// eachProtoIn is eachProto limited to protos.
+func eachProtoIn(t *testing.T, protos []string, fn func(t *testing.T, s *server, proto string)) {
 	t.Parallel()
-	for _, proto := range protocols {
+	for _, proto := range protos {
 		t.Run(proto, func(t *testing.T) {
 			t.Parallel()
 			fn(t, newServer(t), proto)
@@ -99,17 +106,17 @@ func eachProto(t *testing.T, fn func(t *testing.T, s *server, proto string)) {
 	}
 }
 
-func newServer(t *testing.T) *server {
+func newServer(t *testing.T, opts ...testcontainers.ContainerCustomizer) *server {
 	t.Helper()
 
 	var waits []wait.Strategy
-	var exposed []string
+	exposed := []string{ftPort}
 	for _, p := range queryPorts {
 		exposed = append(exposed, p)
 		waits = append(waits, wait.ForListeningPort(p))
 	}
 
-	ctr, err := testcontainers.Run(t.Context(), image,
+	ctr, err := testcontainers.Run(t.Context(), image, append([]testcontainers.ContainerCustomizer{
 		testcontainers.WithEnv(map[string]string{"TS3SERVER_LICENSE": "accept"}),
 		testcontainers.WithCmd(
 			"serveradmin_password="+adminPass,
@@ -123,7 +130,7 @@ func newServer(t *testing.T) *server {
 		),
 		testcontainers.WithExposedPorts(exposed...),
 		testcontainers.WithWaitStrategyAndDeadline(2*time.Minute, waits...),
-	)
+	}, opts...)...)
 	testcontainers.CleanupContainer(t, ctr)
 	// Registered after CleanupContainer, so it runs before the container is gone.
 	t.Cleanup(func() {
@@ -155,6 +162,11 @@ func newServer(t *testing.T) *server {
 		}
 		s.ports[proto] = mapped.Port()
 	}
+	mapped, err := ctr.MappedPort(t.Context(), ftPort)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.ftPort = mapped.Port()
 
 	s.apiKey, err = s.createAPIKey()
 	if err != nil {
@@ -196,13 +208,30 @@ func (s *server) query(fn func(c *tsraw.Client) error) error {
 		return err
 	}
 	defer c.Close()
-	if err := c.Login(adminUser, adminPass); err != nil {
+	if err := retryFlood(func() error { return c.Login(adminUser, adminPass) }); err != nil {
 		return err
 	}
-	if err := c.Use(1); err != nil {
+	if err := retryFlood(func() error { return c.Use(1) }); err != nil {
 		return err
 	}
-	return fn(c)
+	return retryFlood(func() error { return fn(c) })
+}
+
+// floodWindow is the server's default serverinstance_serverquery_flood_time.
+const floodWindow = 3 * time.Second
+
+// retryFlood runs fn until the server stops rejecting it for flooding (524).
+// A rejected command was not run, so a retry cannot apply a write twice.
+// Quicker retries than one flood window get the IP banned.
+func retryFlood(fn func() error) error {
+	for i := 0; ; i++ {
+		err := fn()
+		var qerr *tsraw.Error
+		if !errors.As(err, &qerr) || qerr.ID != 524 || i == 10 {
+			return err
+		}
+		time.Sleep(floodWindow)
+	}
 }
 
 // read is query for a read-only fn. A deploy restarts the virtual server,
@@ -234,9 +263,9 @@ func (s *server) mustQuery(t *testing.T, cmd *tsraw.Cmd) {
 	}
 }
 
-// ts3snap runs the built binary against s over proto.
-func (s *server) ts3snap(proto string, args ...string) error {
-	flags := []string{"--host=" + s.host, "--port=" + s.ports[proto], "--proto=" + proto}
+// ts3snap runs the built binary against s over proto and returns its output.
+func (s *server) ts3snap(proto string, args ...string) (string, error) {
+	flags := []string{"--host=" + s.host, "--port=" + s.ports[proto], "--proto=" + proto, "--ft-port=" + s.ftPort}
 	switch proto {
 	case "raw", "ssh":
 		flags = append(flags, "--user="+adminUser, "--pass="+adminPass)
@@ -245,16 +274,18 @@ func (s *server) ts3snap(proto string, args ...string) error {
 	}
 	out, err := exec.Command(bin, append(flags, args...)...).CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("ts3snap %v: %w\n%s", args, err, out)
+		return string(out), fmt.Errorf("ts3snap %v: %w\n%s", args, err, out)
 	}
-	return nil
+	return string(out), nil
 }
 
-func (s *server) mustRun(t *testing.T, proto string, args ...string) {
+func (s *server) mustRun(t *testing.T, proto string, args ...string) string {
 	t.Helper()
-	if err := s.ts3snap(proto, args...); err != nil {
+	out, err := s.ts3snap(proto, args...)
+	if err != nil {
 		t.Fatal(err)
 	}
+	return out
 }
 
 func selfSigned() (crt, key []byte, err error) {

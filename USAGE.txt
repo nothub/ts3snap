@@ -5,6 +5,7 @@ Commands:
     create <filepath>
         Take a snapshot and write it to <filepath>.
         Snapshots can be encrypted with a password provided via --secret flag.
+        Server icons are included with protocols raw and ssh (see Icons).
 
     deploy <filepath>
         Read a snapshot from <filepath> and restore it to the server.
@@ -28,6 +29,10 @@ Global options:
     --port=<port>
         Server query port
         Default value: 10022
+
+    --ft-port=<port>
+        Server file transfer port, used for icons
+        Default value: 30033
 
     --proto=(raw|ssh|http|https)
         Server query protocol
@@ -73,6 +78,19 @@ Authentication:
 
     For authentication with the http and https protocols,
     the api-key flag (--key) is required.
+
+Icons:
+
+    TeamSpeak snapshots only reference icons by id, and a deploy deletes
+    all icons on the server, even with --keepfiles. ts3snap therefore
+    downloads the icons via file transfer and stores them in the snapshot
+    file, encrypted when --secret is set, and uploads them after a deploy.
+
+    File transfer needs the raw or ssh protocol, since WebQuery does not
+    support it. With http and https, icons are skipped with a warning.
+
+    Avatars, channel files, bans, privilege keys and temporary server
+    passwords are not part of a snapshot.
 
 Security:
 

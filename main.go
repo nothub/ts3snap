@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
 
 	tsweb "github.com/jkoenig134/go-ts3"
 	tsraw "github.com/multiplay/go-ts3"
@@ -43,6 +44,9 @@ func main() {
 
 	var createF func() Snapshot
 	var deployF func(snap Snapshot)
+	// Left nil for WebQuery, which does not support file transfer.
+	var backupIconsF func() map[string][]byte
+	var restoreIconsF func(icons map[string][]byte)
 
 	switch proto {
 	case "raw", "ssh":
@@ -55,8 +59,8 @@ func main() {
 
 		log.Printf("Connecting to: %s (%s)", addr, proto)
 
-		var client *tsraw.Client
-		{
+		connect := func() (*tsraw.Client, error) {
+			var client *tsraw.Client
 			var err error
 			switch proto {
 			case "raw":
@@ -72,25 +76,60 @@ func main() {
 				}))
 			}
 			if err != nil {
-				log.Fatalln(err.Error())
+				return nil, err
 			}
-		}
-		defer client.Close()
 
-		if proto == "raw" {
-			err := client.Login(user, pass)
+			if proto == "raw" {
+				err := client.Login(user, pass)
+				if err != nil {
+					client.Close()
+					return nil, err
+				}
+			}
+
+			err = client.Use(int(srvId))
 			if err != nil {
-				log.Fatal(err)
+				client.Close()
+				return nil, err
 			}
+			return client, nil
 		}
 
-		err := client.Use(int(srvId))
+		client, err := connect()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err.Error())
 		}
+		defer func() { client.Close() }()
+
+		ftAddr := fmt.Sprintf("%s:%v", host, ftPort)
 
 		createF = func() Snapshot { return createRaw(client) }
 		deployF = func(snap Snapshot) { deployRaw(client, snap) }
+		backupIconsF = func() map[string][]byte {
+			icons, err := backupIcons(client, ftAddr)
+			if err != nil {
+				log.Fatalln(err.Error())
+			}
+			return icons
+		}
+		restoreIconsF = func(icons map[string][]byte) {
+			// The deploy restarts the virtual server, which drops this session.
+			client.Close()
+			var err error
+			for deadline := time.Now().Add(30 * time.Second); ; time.Sleep(time.Second) {
+				client, err = connect()
+				if err == nil {
+					break
+				}
+				if time.Now().After(deadline) {
+					log.Fatalln(err.Error())
+				}
+			}
+			err = restoreIcons(client, ftAddr, icons)
+			if err != nil {
+				log.Fatalln(err.Error())
+			}
+		}
 
 	case "http", "https":
 
@@ -125,10 +164,25 @@ func main() {
 	switch cmd {
 	case "create":
 		snap := createF()
+		if backupIconsF == nil {
+			log.Println("Warning: icons are not included, WebQuery does not support file transfer. Use the raw or ssh protocol to include them.")
+		} else {
+			snap.setFiles(backupIconsF(), secret)
+		}
 		save(snap, filePath)
 	case "deploy":
 		snap := load(filePath)
+		// Read first: a deploy deletes the server's icons, so unreadable
+		// files have to fail before it.
+		files := snap.files(secret)
 		deployF(snap)
+		if len(files) > 0 {
+			if restoreIconsF == nil {
+				log.Println("Warning: icons were not restored, WebQuery does not support file transfer. Use the raw or ssh protocol to restore them.")
+			} else {
+				restoreIconsF(files)
+			}
+		}
 	}
 
 	log.Println("Done!")
