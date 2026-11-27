@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -107,6 +108,10 @@ func main() {
 		deployF = func(snap Snapshot) { deployRaw(client, snap) }
 		backupIconsF = func() map[string][]byte {
 			icons, err := backupIcons(client, ftAddr)
+			if errors.Is(err, errFTUnreachable) {
+				log.Printf("Warning: icons are not included, %v. Set --ft-port if the server uses another port.", err)
+				return nil
+			}
 			if err != nil {
 				log.Fatalln(err.Error())
 			}

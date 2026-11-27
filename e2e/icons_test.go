@@ -130,27 +130,14 @@ func TestIconsDamaged(t *testing.T) {
 		s.uploadIcons(t, wantIcons)
 		s.mustRun(t, proto, "--secret=e2e-secret", "create", file)
 
-		raw, err := os.ReadFile(file)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var fields map[string]any
-		if err := json.Unmarshal(raw, &fields); err != nil {
-			t.Fatal(err)
-		}
-		sealed, err := base64.StdEncoding.DecodeString(fields["files_sealed"].(string))
-		if err != nil {
-			t.Fatal(err)
-		}
-		sealed[len(sealed)-1] ^= 0xff
-		fields["files_sealed"] = sealed
-		raw, err = json.Marshal(fields)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(file, raw, 0o600); err != nil {
-			t.Fatal(err)
-		}
+		editSnapshot(t, file, func(fields map[string]any) {
+			sealed, err := base64.StdEncoding.DecodeString(fields["files_sealed"].(string))
+			if err != nil {
+				t.Fatal(err)
+			}
+			sealed[len(sealed)-1] ^= 0xff
+			fields["files_sealed"] = sealed
+		})
 
 		out, err := s.ts3snap(proto, "--secret=e2e-secret", "deploy", file)
 		if err == nil {
@@ -160,6 +147,48 @@ func TestIconsDamaged(t *testing.T) {
 			t.Fatalf("no decrypt error in output:\n%s", out)
 		}
 		s.assertIcons(t, wantIcons)
+	})
+}
+
+// TestIconsUnsupportedPath covers a hand-edited snapshot with a file outside
+// the icon directory. It must fail before the deploy deletes the icons.
+func TestIconsUnsupportedPath(t *testing.T) {
+	eachProtoIn(t, ftProtocols, func(t *testing.T, s *server, proto string) {
+		file := filepath.Join(t.TempDir(), "snapshot.json")
+
+		s.uploadIcons(t, wantIcons)
+		s.mustRun(t, proto, "create", file)
+		editSnapshot(t, file, func(fields map[string]any) {
+			fields["files"].(map[string]any)["/elsewhere/icon_7"] = "AA=="
+		})
+
+		out, err := s.ts3snap(proto, "deploy", file)
+		if err == nil {
+			t.Fatal("deploy with unsupported file succeeded")
+		}
+		if !strings.Contains(out, "Unsupported file in snapshot") {
+			t.Fatalf("no unsupported file error in output:\n%s", out)
+		}
+		s.assertIcons(t, wantIcons)
+	})
+}
+
+func TestIconsFileTransferUnreachable(t *testing.T) {
+	eachProtoIn(t, ftProtocols, func(t *testing.T, s *server, proto string) {
+		file := filepath.Join(t.TempDir(), "snapshot.json")
+
+		s.uploadIcons(t, wantIcons)
+		// The last --ft-port wins, and nothing listens on port 1.
+		out := s.mustRun(t, proto, "--ft-port=1", "create", file)
+
+		if !strings.Contains(out, "icons are not included") {
+			t.Fatalf("no warning about skipped icons in output:\n%s", out)
+		}
+		editSnapshot(t, file, func(fields map[string]any) {
+			if _, ok := fields["files"]; ok {
+				t.Error("snapshot has files despite unreachable file transfer port")
+			}
+		})
 	})
 }
 
@@ -347,4 +376,25 @@ func (s *server) assertIcons(t *testing.T, want map[string][]byte) {
 		return out
 	}
 	t.Fatalf("icons differ (name: size)\ngot:  %v\nwant: %v", sizes(got), sizes(want))
+}
+
+// editSnapshot rewrites the snapshot file at path through edit.
+func editSnapshot(t *testing.T, path string, edit func(fields map[string]any)) {
+	t.Helper()
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fields map[string]any
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		t.Fatal(err)
+	}
+	edit(fields)
+	raw, err = json.Marshal(fields)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
 }

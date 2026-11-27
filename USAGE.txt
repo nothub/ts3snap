@@ -88,6 +88,9 @@ Icons:
 
     File transfer needs the raw or ssh protocol, since WebQuery does not
     support it. With http and https, icons are skipped with a warning.
+    Icons are also skipped with a warning when the file transfer port
+    (--ft-port) is unreachable. File transfers are never encrypted, even
+    with ssh.
 
     Avatars, channel files, bans, privilege keys and temporary server
     passwords are not part of a snapshot.

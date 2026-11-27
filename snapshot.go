@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"path"
 )
 
 type Snapshot struct {
@@ -35,20 +36,24 @@ func (snap *Snapshot) setFiles(files map[string][]byte, secret string) {
 }
 
 func (snap *Snapshot) files(secret string) map[string][]byte {
-	if snap.FilesSealed == nil {
-		return snap.Files
+	files := snap.Files
+	if snap.FilesSealed != nil {
+		if secret == "" {
+			log.Fatalln("Snapshot contains encrypted files, secret (--secret) is required!")
+		}
+		plain, err := unseal(secret, snap.FilesSealed)
+		if err != nil {
+			log.Fatalln("Unable to decrypt snapshot files, wrong secret?")
+		}
+		err = json.Unmarshal(plain, &files)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
 	}
-	if secret == "" {
-		log.Fatalln("Snapshot contains encrypted files, secret (--secret) is required!")
-	}
-	plain, err := unseal(secret, snap.FilesSealed)
-	if err != nil {
-		log.Fatalln("Unable to decrypt snapshot files, wrong secret?")
-	}
-	var files map[string][]byte
-	err = json.Unmarshal(plain, &files)
-	if err != nil {
-		log.Fatalln(err.Error())
+	for p := range files {
+		if path.Dir(p) != iconDir {
+			log.Fatalf("Unsupported file in snapshot: %s", p)
+		}
 	}
 	return files
 }

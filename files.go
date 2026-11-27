@@ -20,6 +20,8 @@ const (
 	errFlooding    = 524
 )
 
+var errFTUnreachable = errors.New("file transfer port unreachable")
+
 func backupIcons(c *tsraw.Client, ftAddr string) (map[string][]byte, error) {
 	var entries []struct {
 		Name string `ms:"name"`
@@ -48,10 +50,7 @@ func backupIcons(c *tsraw.Client, ftAddr string) (map[string][]byte, error) {
 
 func restoreIcons(c *tsraw.Client, ftAddr string, files map[string][]byte) error {
 	for p, data := range files {
-		dir, name := path.Split(p)
-		if dir != iconDir+"/" {
-			return fmt.Errorf("unsupported file in snapshot: %s", p)
-		}
+		name := path.Base(p)
 		// Icons are uploaded by bare name; the server files them under iconDir.
 		if err := upload(c, ftAddr, "/"+name, data); err != nil {
 			return fmt.Errorf("upload %s: %w", name, err)
@@ -120,7 +119,7 @@ func upload(c *tsraw.Client, ftAddr, name string, data []byte) error {
 func ftDial(addr, key string) (net.Conn, error) {
 	conn, err := net.DialTimeout("tcp", addr, 10*time.Second)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", errFTUnreachable, err)
 	}
 	conn.SetDeadline(time.Now().Add(time.Minute))
 	if _, err := io.WriteString(conn, key); err != nil {
